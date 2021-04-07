@@ -65,10 +65,24 @@ int strtoxy(const char* input) {
 	int x, y;
 	for (int i = 0; input[i]; i++){
 		if (input[i] == 'd') {
-			x = strtol(&input[0], NULL, 10); 
-			vprint("Number of dice: %d\n", x);
-			y = strtol(&input[i + 1], NULL, 10);
-			vprint("Size of dice: %d\n", y);
+			if (i == 0){
+				x = 1;
+				vprint("Number of dice: 1\n");
+				y = strtol(&input[1], NULL, 10);
+				vprint("Size of dice: %d\n", y);
+			}
+			else if (input[i - 1] == ' ') {
+				x = 1;
+				vprint("Number of dice: 1\n");
+				y = strtol(&input[1], NULL, 10);
+				vprint("Size of dice: %d\n", y);
+			}	
+			else {
+				x = strtol(&input[0], NULL, 10); 
+				vprint("Number of dice: %d\n", x);
+				y = strtol(&input[i + 1], NULL, 10);
+				vprint("Size of dice: %d\n", y);
+			}
 		}
 	}
 
