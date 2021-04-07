@@ -56,41 +56,20 @@ void rollxdy(int x, int y, int* results) {
 		// add a random number between 1 and y
 		int thisdie = ((rand() % y) + 1);
 		results[thisdie]++;
-		vvprint("\tDice number %d result: %d\n", i , thisdie);
+		vvprint("\tDice number %d result: %d\n", i + 1, thisdie);
 	}
 }
 
 
-int strtoxy(const char* input) {
-	int x, y;
-	for (int i = 0; input[i]; i++){
-		if (input[i] == 'd') {
-			if (i == 0){
-				x = 1;
-				vprint("Number of dice: 1\n");
-				y = strtol(&input[1], NULL, 10);
-				vprint("Size of dice: %d\n", y);
-			}
-			else if (input[i - 1] == ' ') {
-				x = 1;
-				vprint("Number of dice: 1\n");
-				y = strtol(&input[1], NULL, 10);
-				vprint("Size of dice: %d\n", y);
-			}	
-			else {
-				x = strtol(&input[0], NULL, 10); 
-				vprint("Number of dice: %d\n", x);
-				y = strtol(&input[i + 1], NULL, 10);
-				vprint("Size of dice: %d\n", y);
-			}
-		}
-	}
-
+void processDice(int x, int y) {
 	long total = 0;
 	int* diceRolls;
 	// diceRolls will be an array such that diceRolls[x] is equal to the
 	// number of dice that rolled x
 	diceRolls = malloc((y + 1) * sizeof(int));
+	for (int i = 0; i < y + 1; i++) {
+		diceRolls[i] = 0;
+	}
 	rollxdy(x, y, diceRolls);
 
 	vprint("Total calculation:\n");
@@ -182,10 +161,41 @@ int strtoxy(const char* input) {
 			printf("%d\n", topScorers[topScoreIdx - 1]);
 		}
 	}
-   
-	free(diceRolls);
-	return 0;	
 
+	free(diceRolls);
+}
+
+
+void strtoxy(const char* input) {
+	int x, y;
+	int lastDie = 0;
+	for (int i = 0; input[i]; i++){
+		if (input[i] == 'd') {
+			if (i == 0){
+				vprint("\nNumber of dice: 1\n");
+				y = strtol(&input[1], NULL, 10);
+				vprint("Size of dice: %d\n", y);
+				processDice(1, y);
+			}
+			else if (input[i - 1] == ' ') {
+				vprint("\nNumber of dice: 1\n");
+				y = strtol(&input[1], NULL, 10);
+				vprint("Size of dice: %d\n", y);
+				processDice(1, y);
+			}	
+			else {
+				x = strtol(&input[lastDie], NULL, 10); 
+				vprint("\nNumber of dice: %d\n", x);
+				y = strtol(&input[i + 1], NULL, 10);
+				vprint("Size of dice: %d\n", y);
+				processDice(x, y);
+			}
+		}
+		
+		else if (input[i] == ' ') {
+			lastDie = i;
+		}	
+	}
 }
 
 
