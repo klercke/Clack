@@ -20,6 +20,7 @@ _Bool MEDIAN_MODE = 0;
 _Bool MODE_MODE = 0;
 
 
+// Print input if VERBOSE_MODE is set
 void vprint(char* input, ...) {
 	va_list args;
 	
@@ -33,6 +34,7 @@ void vprint(char* input, ...) {
 }
 
 
+// Print input if VERY_VERBOSE_MODE is set
 void vvprint(char* input, ...) {
 	va_list args;
 	
@@ -46,34 +48,51 @@ void vvprint(char* input, ...) {
 }
 
 
+// Rolls xdy and stores the value in results such that results[n] is equal to
+// the number of dice which rolled an n
+//
+// int x:			the number of dice to roll
+// int y:			the number of sides on each die
+// int* results:	pointer to array in which results should be stored
 void rollxdy(int x, int y, int* results) {
+	// RNG setup (bad, improve later)
 	struct timeval t;
 	gettimeofday(&t, NULL);
 	srand((long) &t);
 
 	vvprint("Results:\n");
 	for (int i = 0; i < x; i++) {
-		// add a random number between 1 and y
+		// pick a random number between 1 and y
 		int thisdie = ((rand() % y) + 1);
+		// increment this result
 		results[thisdie]++;
 		vvprint("\tDice number %d result: %d\n", i + 1, thisdie);
 	}
 }
 
 
+// Given x and y, process rolls and any information requested by the user
+//
+// int x:	the number of dice to roll
+// int y:	the number of faces on each die
 void processDice(int x, int y) {
 	long total = 0;
+	// diceRolls will be an array such that diceRolls[n] is equal to the
+	// number of dice that rolled n
 	int* diceRolls;
-	// diceRolls will be an array such that diceRolls[x] is equal to the
-	// number of dice that rolled x
 	diceRolls = malloc((y + 1) * sizeof(int));
+	// Build the diceRolls array
 	for (int i = 0; i < y + 1; i++) {
 		diceRolls[i] = 0;
 	}
+	// Populate diceRolls
 	rollxdy(x, y, diceRolls);
 
+	// Add up the total of all dice rolled
 	vprint("Total calculation:\n");
 	for (int i = 1; i <= y; i++) {
+		// Since diceRolls[i] is equal to the number of dice which rolled an
+		// i, we have to multilply by i to get the total
 		total += diceRolls[i] * i;
 		if (diceRolls[i] > 0) {
 			vvprint("\t%d dice rolled a %d. ", diceRolls[i], i);
@@ -83,12 +102,15 @@ void processDice(int x, int y) {
 	printf("Result from rolling %dd%d: %ld\n", x, y, total);
 
 	if (AVERAGE_MODE) {
+		// Average is easy. Since x is the number of dice rolled, the average
+		// is just total / x.
 		double average = (double) total / (double) x;
 		printf("Average roll: %f\n", average); 
 	}
 
 	if (MEDIAN_MODE) {
-		// convert "array" to "list"
+		// For median, we have to convert the array of results to an ordered
+		// list. For example, [1, 3, 2, 1] would become [1, 2, 2, 2, 3, 3, 4].
 		vprint("Median calculation:\n");
 		int diceRollList[x];
 		int listIdx = 0;
@@ -110,8 +132,9 @@ void processDice(int x, int y) {
 			printf("%d]\n", diceRollList[listIdx - 1]);
 		}
 
+		// Now that we have this list, we can calculate the median.
 		if (x % 2 == 0){
-			// even, median calculation is more difficult
+			// Even number of items means we average the two medians
 			int med1 = diceRollList[(x / 2) - 1];
 			int med2 = diceRollList[x / 2];
 
@@ -120,7 +143,7 @@ void processDice(int x, int y) {
 			printf("Median roll: %f\n", median);
 		}
 		else {
-			// odd number of items
+			// Odd number of items means we can just find one median and use that
 
 			int median = diceRollList[(x / 2)];
 			printf("Median roll: %d\n", median);
@@ -128,19 +151,23 @@ void processDice(int x, int y) {
 	}
 
 	if (MODE_MODE) {
+		// Mode is relatively simple. Since diceRolls[n] equals the number of
+		// dice which rolled an n, we simply have to find which values for n
+		// give us the highest value for diceRolls[n].
 		vprint("Mode calcultion:\n");
 		int topScore = 0;
 		int topScorer = 0;
 
-		//find most common results
+		// Find the number of dice which rolled the most common result
 		for (int i = 0; i < y; i++) {
 			if (diceRolls[i] > topScore) {
 				topScore = diceRolls[i];
 				topScorer = i;
-				vvprint("\tNew most common result: %d", topScorer); 
-				vvprint(" appearing %d times\n", topScore); 
+				vprint("\tNew most common result: %d", topScorer); 
+				vprint(" appearing %d times\n", topScore); 
 			}
 		}
+		// Find all results which are tied for most common  
 		int topScorers[y];
 		int topScoreIdx = 0;
 		for (int i = 0; i < y; i++) {
@@ -150,6 +177,7 @@ void processDice(int x, int y) {
 			}
 		}
 
+		// Print the single mode or all tied modes
 		if (topScoreIdx == 1) {
 			printf("Mode result: %d\n", topScorer);
 		}
@@ -166,6 +194,10 @@ void processDice(int x, int y) {
 }
 
 
+// Take an input in the form xdy, find x and y, and call processDice with those
+// values.
+//
+// char* input:	The text to parse
 void strtoxy(const char* input) {
 	int x, y;
 	int lastDie = 0;
