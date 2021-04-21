@@ -1,7 +1,7 @@
 # Makefile for clack
 
 # executable name
-TARGET = clack
+TARGET = clack 
 
 # libraries to link
 LIBS =  
@@ -46,3 +46,6 @@ clean:
 remove: clean
 	@$(rm) $(BINDIR)/$(TARGET)
 	@echo "Executable removed!"
+
+drawDice:
+	gcc src/drawDice.c $(GFLAGS) -o bin/drawDice
