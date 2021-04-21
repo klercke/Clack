@@ -12,12 +12,16 @@
 #include <sys/time.h>
 #include <stdarg.h>
 
+#include "drawDice.h"
+
+
 // Flags:
 _Bool VERBOSE_MODE = 0;
 _Bool VERY_VERBOSE_MODE = 0;
 _Bool AVERAGE_MODE = 0;
 _Bool MEDIAN_MODE = 0;
 _Bool MODE_MODE = 0;
+_Bool PRETTY_PRINT_MODE = 0;
 
 
 // Print input if VERBOSE_MODE is set
@@ -48,6 +52,39 @@ void vvprint(char* input, ...) {
 }
 
 
+// Draw a die if PRETTY_PRINT_MODE is set, otherwise just print the number
+// int size:	Type of die. Accepted types are 4, 6, 8, 10, 12, 20
+// int face:	The face of the die to print
+void prettyPrintDie(int size, int face) {
+	if (!PRETTY_PRINT_MODE) {
+		// Normal printing
+		printf("%d", face);
+		return;
+	}
+
+	switch (size) {
+		case 4:
+			drawSmalld4(face);
+			break;
+		case 6:
+			drawSmalld6(face);
+			break;
+		case 8:
+			drawSmalld8(face);
+			break;
+		case 10:
+			drawSmalld10(face);
+			break;
+		case 12:
+			drawSmalld12(face);
+			break;
+		case 20:
+			drawSmalld20(face);
+			break;
+	}
+}
+
+
 // Rolls xdy and stores the value in results such that results[n] is equal to
 // the number of dice which rolled an n
 //
@@ -63,10 +100,17 @@ void rollxdy(int x, int y, int* results) {
 	vvprint("Results:\n");
 	for (int i = 0; i < x; i++) {
 		// pick a random number between 1 and y
-		int thisdie = ((rand() % y) + 1);
+		int thisDie = ((rand() % y) + 1);
 		// increment this result
-		results[thisdie]++;
-		vvprint("\tDice number %d result: %d\n", i + 1, thisdie);
+		results[thisDie]++;
+		if (PRETTY_PRINT_MODE && VERY_VERBOSE_MODE) {
+			printf("Die number %d:\n", i + 1);
+			prettyPrintDie(y, thisDie);
+			printf("\n");
+		}
+		else {
+			vvprint("\tDice number %d result: %d\n", i + 1, thisDie);
+		}
 	}
 }
 
@@ -248,7 +292,7 @@ void printHelp() {
 int main(int argc, char** argv) {
 	int opt;
 	_Bool verbose, very_verbose = 0;
-	while ((opt = getopt(argc, argv, ":hVvamM")) != -1) {
+	while ((opt = getopt(argc, argv, ":hVvamMp")) != -1) {
 		switch (opt) {
 			case 'h':
 				printHelp();
@@ -267,6 +311,9 @@ int main(int argc, char** argv) {
 				break;
 			case 'M':
 				MODE_MODE = 1;
+				break;
+			case 'p':
+				PRETTY_PRINT_MODE = 1;
 				break;
 			case ':':
 				printf("option %c needs a value\n", opt);
